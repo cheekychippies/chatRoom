@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', (event) => {
+
     const socket = io('http://localhost:3001')
 
     const roomInput = document.querySelector('#roomInput');
@@ -56,4 +56,3 @@ document.addEventListener('DOMContentLoaded', (event) => {
         li.textContent = data;
         document.querySelector('#messages').appendChild(li);
     });
-});
