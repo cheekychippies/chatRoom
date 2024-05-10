@@ -13,16 +13,25 @@ const io = new Server(httpServer, {
 const roomMessages = {};
 
 io.on('connection', (socket) => {
-    console.log('user connected')
+    console.log(`user ${socket.id} connected`)
     // Join a room
     socket.on('joinRoom', (room) => {
         socket.join(room);
         // Send the history of the room to the user
         socket.emit('messageHistory', roomMessages[room] || []);
+        if (!roomMessages[room]) {
+            roomMessages[room] = [];
+        }
+        roomMessages[room].push(`${socket.id.substring(0,5)} has joined the room`);
+        io.to(room).emit('message', `${socket.id.substring(0,5)} has joined the room`);
     });
     // Leave a room
     socket.on('leaveRoom', (room) => {
         socket.leave(room);
+        // Add a message to the room's message array indicating the user has left
+        roomMessages[room].push(`${socket.id.substring(0,5)} has left the room`);
+        // Broadcast the message to all users in the room
+        io.to(room).emit('message', `${socket.id.substring(0,5)} has left the room`);
     });
     // Listen for messages and broadcast them to the same room
     socket.on('message', (data) => {
@@ -32,7 +41,7 @@ io.on('connection', (socket) => {
             roomMessages[data.room] = [];
         }
         roomMessages[data.room].push(data.message);
-        io.to(data.room).emit('message', data.message);
+        io.to(data.room).emit('message',`${socket.id.substring(0,5)}: ${data.message}`);
     });
     // Handle disconnections
     socket.on('disconnect', () => {
